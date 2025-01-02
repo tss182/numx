@@ -23,14 +23,13 @@ func GenerateNumber() string {
 func GetTimeFromID(str string) time.Time {
 	i := decode(str, typeStr)
 	str2 := fmt.Sprintf("%d", i)
-	fmt.Println(str2)
 	i, _ = strconv.ParseInt(str2, 10, 64)
 	return time.Unix(0, i)
 }
 
 func randPrefix(baseString string, number int) string {
 	var randomByte = make([]byte, number)
-	n, err := rand.Read(randomByte)
+	_, err := rand.Read(randomByte)
 	if err != nil {
 		panic(err)
 	}
@@ -38,7 +37,7 @@ func randPrefix(baseString string, number int) string {
 	for _, b := range randomByte {
 		sb.WriteByte(baseString[int(b)%len(baseString)])
 	}
-	retung sb.String()
+	return sb.String()
 }
 
 func encode(n int64, typeData string) string {
@@ -52,15 +51,41 @@ func encode(n int64, typeData string) string {
 	}
 	var str = baseDefault[n : n+1]
 	result = str + result
-	randomStr := randPrefix(baseDefault,6)
+	randomStr := randPrefix(baseDefault,8)
 	result = randomStr + result
-	return result
+	var endResult string
+	lenSplit := 5
+	for i:=0; i<len(result); i+=lenSplit {
+		end := i + lenSplit
+		if end > len(result) {
+			end = len(result)
+		}
+		endResult += result[i:end]+"-"
+	}
+	endResult = strings.TrimRight(endResult, "-")
+	return endResult
+}
+
+func GetOtp(length int) string {
+	var randomByte = make([]byte, length)
+	_, err := rand.Read(randomByte)
+	if err != nil {
+		panic(err)
+	}
+	var sb strings.Builder
+	for _, b := range randomByte {
+		newChar := int(b)%10
+		sb.WriteString(strconv.Itoa(newChar))
+	}
+	return sb.String()
 }
 
 func decode(plaintext, typeData string) int64 {
 	baseDefault := getBase(typeData)
 	baseSplit := strings.Split(baseDefault, "")
-	strSplit := strings.Split(plaintext[6:], "")
+	plaintext = strings.Replace(plaintext,"-","",-1)
+	plaintext = plaintext[8:]
+	strSplit := strings.Split(plaintext, "")
 	baseData := len(baseDefault)
 	var result int64
 	for i, v := range strSplit {
