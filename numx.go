@@ -1,6 +1,7 @@
 package numx
 
 import (
+	"crypto/rand"
 	"fmt"
 	"math"
 	"sort"
@@ -27,6 +28,19 @@ func GetTimeFromID(str string) time.Time {
 	return time.Unix(0, i)
 }
 
+func randPrefix(baseString string, number int) string {
+	var randomByte = make([]byte, number)
+	n, err := rand.Read(randomByte)
+	if err != nil {
+		panic(err)
+	}
+	var sb strings.Builder
+	for _, b := range randomByte {
+		sb.WriteByte(baseString[int(b)%len(baseString)])
+	}
+	retung sb.String()
+}
+
 func encode(n int64, typeData string) string {
 	baseDefault := getBase(typeData)
 	var result string
@@ -38,13 +52,15 @@ func encode(n int64, typeData string) string {
 	}
 	var str = baseDefault[n : n+1]
 	result = str + result
+	randomStr := randPrefix(baseDefault,6)
+	result = randomStr + result
 	return result
 }
 
 func decode(plaintext, typeData string) int64 {
 	baseDefault := getBase(typeData)
 	baseSplit := strings.Split(baseDefault, "")
-	strSplit := strings.Split(plaintext, "")
+	strSplit := strings.Split(plaintext[6:], "")
 	baseData := len(baseDefault)
 	var result int64
 	for i, v := range strSplit {
